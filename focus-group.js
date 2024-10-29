@@ -13,10 +13,6 @@ function focus(current, next) {
 }
 
 function findGroupNodeByEventTarget(target) {
-  if (target.hasAttribute('focusgroup')) {
-    return target.closest('[focusgroup]')
-  }
-
   let itemRole = target.role || target.type || target.tagName
   if (!itemRole) return null
 
@@ -28,12 +24,12 @@ function findGroupNodeByEventTarget(target) {
     if (node) return node
   }
 
-  return null
+  return target.closest?.('[focusgroup]') || null
 }
 
 function getItems(target, group) {
   if (group.hasAttribute('focusgroup')) {
-    return [...group.children]
+    return getToolbarItems(group)
   }
 
   return group.role === 'toolbar'
@@ -53,14 +49,25 @@ function getToolbarItems(group) {
   })
 }
 
-function isHorizontalOrientation(group) {
-  let focusGroupValue = group.getAttribute('focusgroup')
-  if (focusGroupValue === 'inline') return true
-  if (focusGroupValue === 'block') return false
+function getFocusGroup(group) {
+  let focusGroup = group.getAttribute('focusgroup')
+  if (focusGroup === null) return null
 
+  let hasEmptyValue = focusGroup === ''
+
+  return {
+    block: hasEmptyValue ? false : focusGroup.includes('block'),
+    inline: hasEmptyValue || focusGroup.includes('inline'),
+    noMemory: focusGroup.includes('no-memory')
+  }
+}
+
+function isHorizontalOrientation(group) {
+  let focusGroup = getFocusGroup(group)
   let ariaOrientation = group.getAttribute('aria-orientation')
-  if (ariaOrientation === 'vertical') return false
-  if (ariaOrientation === 'horizontal') return true
+
+  if (focusGroup?.block || ariaOrientation === 'vertical') return false
+  if (focusGroup?.inline || ariaOrientation === 'horizontal') return true
 
   let role = group.role
   return role === 'menubar' || role === 'tablist' || role === 'toolbar'
@@ -153,6 +160,20 @@ export function focusGroupKeyUX(options) {
     }
 
     function focusOut(event) {
+      let group = findGroupNodeByEventTarget(event.target)
+      if (group) {
+        let items = getItems(event.target, group)
+        if (getFocusGroup(group)?.noMemory) {
+          items.forEach((item, index) => {
+            if (index === 0) {
+              item.setAttribute('tabindex', 0)
+            } else {
+              item.setAttribute('tabindex', -1)
+            }
+          })
+        }
+      }
+
       if (!event.relatedTarget || event.relatedTarget === window.document) {
         stop()
       }

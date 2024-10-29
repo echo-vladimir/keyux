@@ -456,3 +456,89 @@ test('adds toolbar widget', () => {
   press(window, 'ArrowRight')
   equal(window.document.activeElement, buttons[0])
 })
+
+test('navigates horizontally (left/right) when focusgroup="inline"', () => {
+  let window = new JSDOM().window
+  startKeyUX(window, [focusGroupKeyUX()])
+
+  window.document.body.innerHTML =
+    '<div focusgroup="inline" role="toolbar">' +
+    '<button type="button">Item 1</button>' +
+    '<button type="button">Item 2</button>' +
+    '<button type="button">Item 3</button>' +
+    '</div>'
+
+  let items = window.document.querySelectorAll('button')
+  items[0].focus()
+
+  press(window, 'ArrowRight')
+  equal(window.document.activeElement, items[1])
+
+  press(window, 'ArrowLeft')
+  equal(window.document.activeElement, items[0])
+})
+
+test('navigates vertically (up/down) when focusgroup="block"', () => {
+  let window = new JSDOM().window
+  startKeyUX(window, [focusGroupKeyUX()])
+
+  window.document.body.innerHTML =
+    '<div focusgroup="block" role="toolbar">' +
+    '<button type="button">Item 1</button>' +
+    '<button type="button">Item 2</button>' +
+    '<button type="button">Item 3</button>' +
+    '</div>'
+
+  let items = window.document.querySelectorAll('button')
+  items[0].focus()
+
+  press(window, 'ArrowDown')
+  equal(window.document.activeElement, items[1])
+
+  press(window, 'ArrowUp')
+  equal(window.document.activeElement, items[0])
+})
+
+test('defaults to horizontal (left/right) navigation when focusgroup is empty', () => {
+  let window = new JSDOM().window
+  startKeyUX(window, [focusGroupKeyUX()])
+
+  window.document.body.innerHTML =
+    '<div focusgroup role="toolbar">' +
+    '<button type="button">Item 1</button>' +
+    '<button type="button">Item 2</button>' +
+    '<button type="button">Item 3</button>' +
+    '</div>'
+
+  let items = window.document.querySelectorAll('button')
+  items[0].focus()
+
+  press(window, 'ArrowRight')
+  equal(window.document.activeElement, items[1])
+
+  press(window, 'ArrowLeft')
+  equal(window.document.activeElement, items[0])
+})
+
+test('focus resets to the first item with no-memory in focusgroup', () => {
+  let window = new JSDOM().window
+  startKeyUX(window, [focusGroupKeyUX()])
+
+  window.document.body.innerHTML =
+    '<div focusgroup="inline no-memory" role="toolbar">' +
+    '<button type="button">Item 1</button>' +
+    '<button type="button">Item 2</button>' +
+    '<button type="button">Item 3</button>' +
+    '</div>'
+
+  let items = window.document.querySelectorAll('button')
+
+  items[0].focus()
+  press(window, 'ArrowRight')
+  equal(window.document.activeElement, items[1])
+
+  items[1].blur()
+  items[0].focus()
+
+  equal(window.document.activeElement, items[0])
+})

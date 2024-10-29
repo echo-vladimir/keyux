@@ -381,6 +381,42 @@ const Toolbar: FC = () => {
   )
 }
 
+const Pagination: FC<{ focusgroup?: string }> = ({ focusgroup }) => {
+  return (
+    <nav
+      aria-label="Pagination"
+      className="pagination"
+      // @ts-expect-error
+      focusgroup={focusgroup}
+      role="toolbar"
+    >
+      <button
+        aria-label="Previous Page"
+        className="pagination-button"
+        type="button"
+      >
+        &lt; Prev
+      </button>
+      <button aria-label="Page 1" className="pagination-button" type="button">
+        1
+      </button>
+      <button aria-label="Page 2" className="pagination-button" type="button">
+        2
+      </button>
+      <button aria-label="Page 3" className="pagination-button" type="button">
+        3
+      </button>
+      <button
+        aria-label="Next Page"
+        className="pagination-button"
+        type="button"
+      >
+        Next &gt;
+      </button>
+    </nav>
+  )
+}
+
 const App: FC = () => {
   let [, setUpdate] = useState({})
   let [router, setRouter] = useState('home')
@@ -399,6 +435,8 @@ const App: FC = () => {
       />
       <Tabs />
       <Toolbar />
+      <Pagination focusgroup={'inline'} />
+      <Pagination focusgroup={'block no-memory'} />
     </>
   )
 }
